@@ -68,6 +68,41 @@ Class plm_Numberize {
 		80 => 'eightieth',
 		90 => 'ninetieth');
 
+	protected $roman_numerals = array(
+		'M'  => 1000,
+		'CM' => 900,
+		'D'  => 500,
+		'CD' => 400,
+		'C'  => 100,
+		'XC' => 90,
+		'L'  => 50,
+		'XL' => 40,
+		'X'  => 10,
+		'IX' => 9,
+		'V'  => 5,
+		'IV' => 4,
+		'I'  => 1);
+
+	public function romanize($number = 1)
+	{
+		$num = intval($number);
+		$ret = '';
+
+		foreach ($this->roman_numerals as $roman => $decimal) {
+			$matches = intval($num/$decimal);
+			$ret .= str_repeat($roman, $matches);
+			$num = $num % $decimal;
+		}
+
+		return $ret;
+	}
+
+	public function roman_shortcode($atts, $content) 
+	{
+		if(is_numeric($content) & !(is_null($content)|($content==''))) {
+			return $this->romanize($content);
+		}
+	}
 
 	public function hundredize($the_number, $do_ord=FALSE)
 	{
@@ -531,51 +566,59 @@ Class plm_Numberize {
 		return $date_str;
 	}
 	
-	public function text_date( $the_date, $format = 'short' ) 
+	public function text_date( $the_date, $format = 'short', $date_fmt = '%1$s, %3$s %2$s, %4$s' ) 
 	{
 		if (!($the_date instanceof DateTime)) {
 			$the_date = new DateTime('today');
 		}
+
+		$date_str = '';
 	
 		switch ($format) {
 	
 			case 'super-archaic':
 			case 'sa':
 			case 'very old-timey':
-				$date_str .= $the_date->format( 'l' ) . ', the ' . $this->hundredize( $the_date->format( 'j' ), TRUE );
-				$date_str .= ' day in the month of ' . $the_date->format( 'F' ) . ' in the year ';
-				$date_str .= $this->year_coder( $the_date->format( 'Y' ), 'long');
+			case 'very very long':
+				$date_fmt = '%s, the %s day in the month of %s in the year %s';
 				break;
 	
 			case 'archaic':
-			case 'old-timey':			
-				$date_str .= $the_date->format('l') . ', the ' . $this->hundredize($the_date->format('j'), TRUE) . ' day of ';
-				$date_str .= $the_date->format('F') . ', in the Year ' . $this->year_coder($the_date->format('Y'), 'long');
+			case 'old-timey':
+			case 'very long':
+				$date_fmt = '%s, the %s day of %s, in the Year %s';
 				break;
 	
 			case 'long':
 			case 'l':
 			case 'formal':
-				$date_str .= $the_date->format('l') . ', the ' . $this->hundredize( $the_date->format( 'j'), TRUE ) . ' ';
-				$date_str .= $the_date->format( 'F' ) . ', ' . $this->year_coder( $the_date->format( 'Y' ), 'long' );
+				$date_fmt = '%s, the %s of %s, %s';
 				break;
 	
 			case 'medium':
 			case 'm':
 			case 'med';
-				$date_str .= $the_date->format( 'l' ) . ', the ' . $this->hundredize( $the_date->format( 'j' ), TRUE ) . ' of ';
-				$date_str .= $the_date->format( 'F' ) . ', ' . $this->year_coder( $the_date->format( 'Y' ), 'short');
+				$date_fmt = '%1$s, %3$s %2$s, %4$s';
 				break;
 			case 'super short':
 			case 'ss':
 			case 'super-short':
 				$date_str .= $the_date->format( 'l, F jS, Y');
 				break;
-			
-			default:
-				$date_str .= $the_date->format('l') . ', ' . $the_date->format('F') . ' ' . $this->hundredize($the_date->format('d'), TRUE) . ', ';
-				$date_str .= $this->year_coder($the_date->format('Y'));
+			case 'custom':
 				break;
+			default:
+				$date_fmt = '%1$s, %3$s %2$s, %4$s';
+				break;
+		}
+
+		if($date_str == '') {
+			$date_str = sprintf($date_fmt, 
+				$the_date->format( 'l' ),
+				$this->hundredize($the_date->format( 'j' ), TRUE),
+				$the_date->format( 'F' ),
+				$this->year_coder( $the_date->format( 'Y' ), 'long')
+				);
 		}
 	
 		return $date_str;
@@ -587,8 +630,29 @@ Class plm_Numberize {
 		add_shortcode('textualize', array($this, 'text_shortcode'));
 		add_shortcode('hoursmins', array($this, 'hm_shortcode'));
 		add_shortcode('dollarize', array($this, 'dollar_shortcode'));
+		add_shortcode('roman', array($this, 'roman_shortcode'));
 	}
 }
 
 $plm_numberizer = new plm_Numberize;
+
+function plm_romanize($number, $echo = FALSE) {
+	$ret = '';
+	global $plm_numberizer;
+
+	if (is_numeric($number)) {
+		$ret = $plm_numberizer->romanize($number);
+	}
+
+	if($echo) {
+		echo $ret;
+	} else {
+		return $ret;
+	}
+}
+
+function plm_textdate($the_date, $format = 'short', $date_fmt = '%1$s, %3$s %2$s, %4$s')
+{
+
+}
 ?>
