@@ -291,7 +291,7 @@ Class plm_Numberize {
 		}
 	}
 	
-	public function hours_mins($mins) 
+	public function hours_mins($mins, $format = '') 
 	{
 		$hoursmins = '';
 	
@@ -304,6 +304,8 @@ Class plm_Numberize {
 			} else {
 				$min_cnt = $mins;
 			}
+
+			if(strtolower($format) == 'array') return array('hours' => $hour_cnt, 'minutes' => $min_cnt);
 	
 			if ($hour_cnt == 1) 
 			{
@@ -376,7 +378,38 @@ Class plm_Numberize {
 	
 		$para = strtoupper($para);
 		$caps = strtoupper($caps);
-		$pieces = explode('.', $content, 2);
+
+		$dollarized = $this->dollarize($content);
+	
+		if ($dollarized != '') 
+		{
+			$dollarized = trim($dollarized);
+		
+			if($caps == 'YES')
+		
+			{
+				$dollarized = ucwords($dollarized);
+			} elseif ($caps == 'FIRST') {
+				$dollarized = ucfirst($dollarized);
+			}
+	
+			if($end != '') 
+			{
+				$dollarized .= $end;
+			}
+		
+			if($para == 'YES')
+			{
+				$dollarized = '<p>' . $dollarized . '</p>';
+			}
+	
+		}
+		return $dollarized;
+	}
+
+	public function dollarize($number)
+	{
+		$pieces = explode('.', $number, 2);
 		$dollars = $pieces[0];
 		$cents = $pieces[1];
 		$dollarwords = '';
@@ -417,34 +450,12 @@ Class plm_Numberize {
 				}
 			}
 		}
-	
-		if ($dollarized != '') 
-		{
-			$dollarized = trim($dollarized);
-		
-			if($caps == 'YES')
-		
-			{
-				$dollarized = ucwords($dollarized);
-			} elseif ($caps == 'FIRST') {
-				$dollarized = ucfirst($dollarized);
-			}
-	
-			if($end != '') 
-			{
-				$dollarized .= $end;
-			}
-		
-			if($para == 'YES')
-			{
-				$dollarized = '<p>' . $dollarized . '</p>';
-			}
-	
-		}
+
 		return $dollarized;
+
 	}
 	
-	public function year_coder($year, $format = 'short') 
+	protected function year_coder($year, $format = 'short') 
 	{
 		$yreturn = '';
 	
@@ -460,7 +471,7 @@ Class plm_Numberize {
 		}
 	}
 	
-	public function shortyear($year) 
+	protected function shortyear($year) 
 	{
 	
 		switch ($year) {
@@ -491,13 +502,13 @@ Class plm_Numberize {
 				break;
 			case (($year > 1099) AND ($year < 2000)): 	// case of teen centuries.
 			default:
-				return ucfirst($this->hundredize( substr( substr( $year, -4 ), 0, 2 ) )) . $this->hundredize( substr( $year, -2 ) );			
+				return ucfirst($this->hundredize( substr( substr( $year, -4 ), 0, 2 ) )) . ' ' . $this->hundredize( substr( $year, -2 ) );			
 				break;
 		}
 	
 	}
 	
-	public function longyear($year) 
+	protected function longyear($year) 
 	{
 	
 		$yreturn = '';
@@ -541,6 +552,7 @@ Class plm_Numberize {
 			'para' => 'yes',
 			'end' => '',
 			'format' => 'short',
+			'date_fmt' => '%1$s, %3$s %2$s, %4$s'
 		), $atts ) );
 	
 		$para = strtolower($para);
@@ -554,7 +566,7 @@ Class plm_Numberize {
 			$the_date = new DateTime('Today');						// If not, use today's date.
 		}
 	
-		$date_str = $this->text_date($the_date, $format);
+		$date_str = $this->text_date($the_date, $format, $date_fmt);
 	
 		$date_str .= $end;
 	
@@ -566,13 +578,14 @@ Class plm_Numberize {
 		return $date_str;
 	}
 	
-	public function text_date( $the_date, $format = 'short', $date_fmt = '%1$s, %3$s %2$s, %4$s' ) 
+	public function text_date( $the_date, $format = 'short', $date_fmt = '%1$s, %3$s %2$s, %5$s' ) 
 	{
 		if (!($the_date instanceof DateTime)) {
 			$the_date = new DateTime('today');
 		}
 
 		$date_str = '';
+		$year_fmt = 'long';
 	
 		switch ($format) {
 	
@@ -598,7 +611,8 @@ Class plm_Numberize {
 			case 'medium':
 			case 'm':
 			case 'med';
-				$date_fmt = '%1$s, %3$s %2$s, %4$s';
+				$date_fmt = '%1$s, %3$s %2$s, %5$s';
+				$year_fmt = 'short';
 				break;
 			case 'super short':
 			case 'ss':
@@ -608,7 +622,8 @@ Class plm_Numberize {
 			case 'custom':
 				break;
 			default:
-				$date_fmt = '%1$s, %3$s %2$s, %4$s';
+				$date_fmt = '%1$s, %3$s %2$s, %5$s';
+				$year_fmt = 'short';
 				break;
 		}
 
@@ -617,7 +632,8 @@ Class plm_Numberize {
 				$the_date->format( 'l' ),
 				$this->hundredize($the_date->format( 'j' ), TRUE),
 				$the_date->format( 'F' ),
-				$this->year_coder( $the_date->format( 'Y' ), 'long')
+				$this->year_coder( $the_date->format( 'Y' ), 'long'),
+				$this->year_coder( $the_date->format( 'Y' ), 'short')
 				);
 		}
 	
@@ -651,8 +667,61 @@ function plm_romanize($number, $echo = FALSE) {
 	}
 }
 
-function plm_textdate($the_date, $format = 'short', $date_fmt = '%1$s, %3$s %2$s, %4$s')
-{
+function plm_textdate($date_in, $format = 'short', $date_fmt = '%1$s, %3$s %2$s, %4$s', $echo = FALSE) {
 
+	if (strtotime($date_in)) { 									// Make sure we have a date here!
+		$the_date = new DateTime($date_in);
+	} else {
+		$the_date = new DateTime('Today');						// If not, use today's date.
+	}
+
+	if(!$echo) {
+		return $plm_numberizer->textdate($the_date, $format, $date_fmt);
+	} else {
+		echo $plm_numberizer->textdate($the_date, $format, $date_fmt); 
+	}
+}
+
+function plm_get_hours_and_mins($mins) {
+
+	return $plm_numberizer->hours_mins($mins, 'array');
+
+}
+
+function plm_hours_and_minutes($mins, $echo = FALSE) 
+{
+	if(!$echo) {
+		return $plm_numberizer->hours_mins($mins);
+	} else {
+		echo $plm_numberizer->hours_mins($mins);
+	}
+}
+
+function plm_text_number($number, $ordinal = FALSE, $echo = FALSE) {
+
+	if(!$echo) {
+		return $plm_numberizer->textualize($number, $ordinal);
+	} else {
+		echo $plm_numberizer->textualize($number, $ordinal);
+	}
+
+}
+
+function plm_roman_numeral($number, $echo = FALSE) {
+
+	if(!$echo) {
+		return $plm_numberizer->romanize($number);
+	} else {
+		echo $plm_numberizer->romanize($number);
+	}
+}
+
+function plm_dollars_and_cents($number, $echo = FALSE) {
+
+	if(!$echo) {
+		return $plm_numberizer->dollarize($number);
+	} else {
+		echo $plm_numberizer->dollarize($number);
+	}
 }
 ?>
