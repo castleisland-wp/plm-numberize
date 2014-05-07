@@ -45,7 +45,7 @@ This shortcode converts a number of minutes into a full text of hours and minute
 ```
 [hoursmins para="yes|no" caps="first|yes" end="any_char"] 123 [/hoursmins] 
 ```
-### [Template Tags](https://github.com/castleisland-wp/plm-numberize/wiki/Template-Tags#text-date) 
+### [Template Tags](https://github.com/castleisland-wp/plm-numberize/wiki/Template-Tags#hours-and-minutes) 
 ```
 $string = plm_hours_and_minutes($minutes, $echo) 
 ```
