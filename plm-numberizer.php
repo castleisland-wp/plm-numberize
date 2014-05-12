@@ -131,7 +131,7 @@ Class plm_Numberize {
 	
 			if ($computed != 0)
 			{
-				$hundredized .= ' ';
+				$hundredized .= ' and ';
 			}
 		}
 	
@@ -270,6 +270,7 @@ Class plm_Numberize {
 			if($caps == 'YES') 
 			{
 				$textnum = ucwords($textnum);
+				$textnum = preg_replace('/\b(And)\b/', 'and', $textnum);
 			} elseif ($caps == 'FIRST') {
 				$textnum = ucfirst($textnum);
 			}
