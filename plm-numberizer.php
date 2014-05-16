@@ -670,6 +670,8 @@ function plm_romanize($number, $echo = FALSE) {
 
 function plm_textdate($date_in, $format = 'short', $date_fmt = '%1$s, %3$s %2$s, %4$s', $echo = FALSE) {
 
+	global $plm_numberizer;
+
 	if (strtotime($date_in)) { 									// Make sure we have a date here!
 		$the_date = new DateTime($date_in);
 	} else {
@@ -685,12 +687,17 @@ function plm_textdate($date_in, $format = 'short', $date_fmt = '%1$s, %3$s %2$s,
 
 function plm_get_hours_and_mins($mins) {
 
+	global $plm_numberizer;
+
 	return $plm_numberizer->hours_mins($mins, 'array');
 
 }
 
 function plm_hours_and_minutes($mins, $echo = FALSE) 
 {
+
+	global $plm_numberizer;
+
 	if(!$echo) {
 		return $plm_numberizer->hours_mins($mins);
 	} else {
@@ -698,7 +705,9 @@ function plm_hours_and_minutes($mins, $echo = FALSE)
 	}
 }
 
-function plm_text_number($number, $ordinal = FALSE, $echo = FALSE) {
+function plm_text_number($number, $ordinal = FALSE, $echo = FALSE) 
+{
+	global $plm_numberizer;
 
 	if(!$echo) {
 		return $plm_numberizer->textualize($number, $ordinal);
@@ -708,7 +717,9 @@ function plm_text_number($number, $ordinal = FALSE, $echo = FALSE) {
 
 }
 
-function plm_roman_numeral($number, $echo = FALSE) {
+function plm_roman_numeral($number, $echo = FALSE) 
+{
+	global $plm_numberizer;
 
 	if(!$echo) {
 		return $plm_numberizer->romanize($number);
@@ -717,7 +728,9 @@ function plm_roman_numeral($number, $echo = FALSE) {
 	}
 }
 
-function plm_dollars_and_cents($number, $echo = FALSE) {
+function plm_dollars_and_cents($number, $echo = FALSE) 
+{
+	global $plm_numberizer;
 
 	if(!$echo) {
 		return $plm_numberizer->dollarize($number);
